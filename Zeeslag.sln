@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerManager", "PlayerManager\PlayerManager.csproj", "{86BB1C99-75C6-4586-9793-8306EEA64198}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayerManager", "PlayerManager\PlayerManager.csproj", "{86BB1C99-75C6-4586-9793-8306EEA64198}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameManager", "GameManager\GameManager.csproj", "{FCC7963C-561A-4FC1-856E-7667C846B9B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameManager", "GameManager\GameManager.csproj", "{FCC7963C-561A-4FC1-856E-7667C846B9B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoardManager", "BoardManager\BoardManager.csproj", "{EA4788DA-6D29-4D64-9A2E-D577E4EA815B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardManager", "BoardManager\BoardManager.csproj", "{EA4788DA-6D29-4D64-9A2E-D577E4EA815B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShipManager", "ShipManager\ShipManager.csproj", "{D6793092-A963-4D2B-9136-013B15F05E11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShipManager", "ShipManager\ShipManager.csproj", "{D6793092-A963-4D2B-9136-013B15F05E11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
