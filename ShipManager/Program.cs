@@ -1,9 +1,9 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Dapr;
 using Dapr.Client;
 
-const string DAPR_STORE_NAME_SHIPS = "shipstore";
-const string DAPR_STORE_NAME_HITS = "hitstore";
+const string DAPR_STORE_NAME = "statestore";
 
 
 DaprClient client = new DaprClientBuilder().Build();
@@ -22,34 +22,51 @@ if (app.Environment.IsDevelopment()) { app.UseDeveloperExceptionPage(); }
 
 app.MapPost("/ships", async (Ship ship) => {
 
-    var newShip = new Ship(Guid.NewGuid(), ship.boardId, ship.size, ship.start, ship.end);
+    var newShip = new Ship(Guid.NewGuid(), ship.BoardId, ship.Size, ship.Start, ship.End);
 
-    await client.SaveStateAsync(DAPR_STORE_NAME_SHIPS, newShip.id.ToString(), newShip.ToString());
+    await client.SaveStateAsync(DAPR_STORE_NAME, newShip.Id.ToString(), JsonSerializer.Serialize(newShip));
+
+    Console.WriteLine(newShip.ToString());
 
     return newShip;
+});
+
+app.MapGet("/shiplocations", async (Guid boardId) =>
+{
+    var shipsForBoard = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, $"{{ \"filter\": {{ \"EQ\": {{ \"boardId\": \"{boardId}\" }} }} }}");
+
+    var shipLocations = shipsForBoard.Results.Select(ship => new ShipLocation(ship.Data.Start, ship.Data.End)).ToArray();
+
+    return new ShipLocations(shipLocations);
 });
 
 // Dapr subscription in [Topic] routes orders topic to this route
 app.MapPost("/shots", [Topic("shotsspubsub", "shots")] async (Shot shot) =>
 {
-    var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME_SHIPS, $"{{\"filter\": {{ \"EQ\": {{ \"boardId\": \"{shot.boardId}\" }} }} }}");
+    Console.WriteLine("Shots...");
+
+    var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, $"{{\"filter\": {{ \"EQ\": {{ \"boardId\": \"{shot.BoardId}\" }} }} }}");
     
     foreach (var ship in shipsToShoot.Results)
     {
-        var hitsOnShip = await client.GetStateAsync<HitCollection>(DAPR_STORE_NAME_HITS, ship.Data.id.ToString()) ?? new HitCollection(ship.Data.id, new List<Point>());
+        Console.WriteLine($"Shooting ship: {ship}");
 
-        if (IsPointOnShip(shot.point, ship.Data))
+        var hitsOnShip = await client.GetStateAsync<HitCollection>(DAPR_STORE_NAME, $"hc_{ship.Data.Id}") 
+            ?? new HitCollection(ship.Data.Id, new List<Point>());
+
+        if (IsPointOnShip(shot.Point, ship.Data))
         {
-            if(hitsOnShip.hits.Count + 1 == ship.Data.size)
+            if(hitsOnShip.Hits.Count + 1 == ship.Data.Size)
             {
                 // send destruction event
-                await client.DeleteStateAsync(DAPR_STORE_NAME_HITS, ship.Data.id.ToString());
+                await client.DeleteStateAsync(DAPR_STORE_NAME, ship.Data.Id.ToString());
             }
             else
             {
-                hitsOnShip.hits.Add(shot.point);
-                await client.SaveStateAsync(DAPR_STORE_NAME_HITS, ship.Data.id.ToString(), hitsOnShip.ToString());
+                hitsOnShip.Hits.Add(shot.Point);
+                await client.SaveStateAsync(DAPR_STORE_NAME, $"hc_{ship.Data.Id}", JsonSerializer.Serialize(hitsOnShip));
                 // send hit event
+                Console.WriteLine("Send Hit!!");
             }
         }
     }
@@ -57,16 +74,16 @@ app.MapPost("/shots", [Topic("shotsspubsub", "shots")] async (Shot shot) =>
 
 bool IsPointOnShip(Point point, Ship ship)
 {
-    var shipPoints = new Point[ship.size];
+    var shipPoints = new Point[ship.Size];
     for(int i = 0; i < shipPoints.Length; i++)
     {
         if (IsShipHorizontal(ship))
         {
-            shipPoints[i] = new Point(ship.start.x + i, ship.start.y);
+            shipPoints[i] = new Point(ship.Start.X + i, ship.Start.Y);
         }
         else
         {
-            shipPoints[i] = new Point(ship.start.x, ship.start.y + i);
+            shipPoints[i] = new Point(ship.Start.X, ship.Start.Y + i);
         }
     }
 
@@ -75,14 +92,16 @@ bool IsPointOnShip(Point point, Ship ship)
 
 bool IsShipHorizontal(Ship ship)
 {
-    return ship.start.y == ship.end.y;
+    return ship.Start.Y == ship.End.Y;
 }
 
 await app.RunAsync();
 
-internal record Ship(Guid id, Guid boardId, int size, Point start, Point end);
-internal record Shot(Guid boardId, Point point);
-internal record Point(int x, int y);
-internal record HitCollection(Guid shipId, List<Point> hits);
-internal record Hit(Guid shipId, Guid boardId, Point impactPoint);
-internal record ShipDestruction(Guid shipId);
+internal record Ship(Guid Id, Guid BoardId, int Size, Point Start, Point End);
+internal record Shot(Guid BoardId, Point Point);
+internal record Point(int X, int Y);
+internal record HitCollection(Guid ShipId, List<Point> Hits);
+internal record Hit(Guid ShipId, Guid BoardId, Point ImpactPoint);
+internal record ShipDestruction(Guid ShipId, Guid BoardId);
+internal record ShipLocation(Point Start, Point End);
+internal record ShipLocations(ShipLocation[] Locations);

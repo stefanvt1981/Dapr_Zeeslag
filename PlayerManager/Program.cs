@@ -1,40 +1,46 @@
-var builder = WebApplication.CreateBuilder(args);
+using System.Numerics;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Dapr;
+using Dapr.Client;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+const string DAPR_STORE_NAME = "statestore";
+
+//var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+//options.PropertyNameCaseInsensitive = true;
+//options.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+//DaprClient client = new DaprClientBuilder().UseJsonSerializationOptions(options).Build();
+
+DaprClient client = new DaprClientBuilder().Build();
+
+var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapPost("/players", async (PlayerRecord player) =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    Console.WriteLine($"Save Playerstring: {player.ToString()}");
 
-app.UseHttpsRedirection();
+    await client.SaveStateAsync(DAPR_STORE_NAME, player.Name, JsonSerializer.Serialize(player));
+       
+    return player;
+});
 
-var summaries = new[]
+app.MapGet("/players/{name}", async (string name) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    //serializen zou in 1 keer moeten kunnen... geen idee waarom dat nu faalt... Mismatch in serializers?
+    var playerString = await client.GetStateAsync<string>(DAPR_STORE_NAME, name);
+    
+    Console.WriteLine($"Get Playerstring: {playerString}");
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var player = JsonSerializer.Deserialize<PlayerRecord>(playerString);
+
+    Console.WriteLine($"Deserialize Playerstring: {player.ToString()}");
+
+    return player;
+});
 
 app.Run();
 
-record Player(string name);
+public record PlayerRecord(string Name, int Age, int Highscore);

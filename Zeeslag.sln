@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoardManager", "BoardManage
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShipManager", "ShipManager\ShipManager.csproj", "{D6793092-A963-4D2B-9136-013B15F05E11}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_TestClient", "_TestClient", "{868D5DE0-986F-4A19-966A-A4B29084775A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeeslagTestClient", "ZeeslagTestClient\ZeeslagTestClient.csproj", "{7EDC7416-B9F6-4EF5-9053-08DD51092826}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,9 +37,16 @@ Global
 		{D6793092-A963-4D2B-9136-013B15F05E11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6793092-A963-4D2B-9136-013B15F05E11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6793092-A963-4D2B-9136-013B15F05E11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EDC7416-B9F6-4EF5-9053-08DD51092826}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EDC7416-B9F6-4EF5-9053-08DD51092826}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EDC7416-B9F6-4EF5-9053-08DD51092826}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EDC7416-B9F6-4EF5-9053-08DD51092826}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7EDC7416-B9F6-4EF5-9053-08DD51092826} = {868D5DE0-986F-4A19-966A-A4B29084775A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {080AD7B7-7DF4-4828-A5FD-85EDC75959FF}

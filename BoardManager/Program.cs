@@ -1,17 +1,13 @@
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Dapr;
 using Dapr.Client;
 
-const string DAPR_STORE_NAME = "boardstore";
+const string DAPR_STORE_NAME = "statestore";
 
-var baseURL = (Environment.GetEnvironmentVariable("BASE_URL") ?? "http://localhost") + ":" + (Environment.GetEnvironmentVariable("DAPR_HTTP_PORT") ?? "3500");
-
-var client = new HttpClient();
-client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-// Adding app id as part of the header
-client.DefaultRequestHeaders.Add("dapr-app-id", "ShipManager");
+DaprClient client = new DaprClientBuilder().Build();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,30 +22,43 @@ app.MapSubscribeHandler();
 if (app.Environment.IsDevelopment()) { app.UseDeveloperExceptionPage(); }
 
 
-app.MapPost("/board", (Board board) => {
-    
+app.MapPost("/board", async (Board board) => {
 
+    var boardId = Guid.NewGuid();
 
-    return Results.Ok(board);
+    var ship = await CreateShip(boardId);
+
+    var newBoard = new Board(boardId, board.GameId, board.Player, board.BoardSize, new[] { ship.Id });
+
+    await client.SaveStateAsync(DAPR_STORE_NAME, newBoard.Id.ToString(), JsonSerializer.Serialize(newBoard));
+
+    Console.WriteLine(newBoard.ToString());
+
+    return newBoard;
 });
 
-async Task<Ship> CreateShip()
+app.MapGet("/board/{boardId}", async (Guid boardId) =>
+{
+    var boardString = await client.GetStateAsync<string>(DAPR_STORE_NAME, boardId.ToString());
+
+    return JsonSerializer.Deserialize<Board>(boardString);    
+});
+
+async Task<Ship> CreateShip(Guid boardId)
 {
     // Generate random (ToDo) Let shipManager generate Id (ToDo)
-    var ship = new Ship(Guid.NewGuid(), 5, new Point(4, 2), new Point(4, 7));
-    var shipJson = JsonSerializer.Serialize<Ship>(ship);
-    var content = new StringContent(shipJson, Encoding.UTF8, "application/json");
+    var ship = new Ship(new Guid(), boardId, 5, new Point(4, 2), new Point(4, 7));
 
-    // Invoking a service
-    var response = await client.PostAsync($"{baseURL}/orders", content);
+    var shipRequest = client.CreateInvokeMethodRequest(HttpMethod.Post, "shipmanager", "ships", ship);
+    var shipResult = await client.InvokeMethodAsync<Ship>(shipRequest);
 
-    return ship;
+    return shipResult;
 }
 
 await app.RunAsync();
 
-internal record Game(Guid id, string player);
-internal record Board(Guid gameId, string player, int boardSize, Ship? ship);
-internal record Ship(Guid id, int size, Point start, Point end);
-internal record Point(int x, int y);
+internal record Game(Guid Id, string Player);
+internal record Board(Guid Id, Guid GameId, string Player, int BoardSize, Guid[] Ships);
+internal record Ship(Guid Id, Guid BoardId, int Size, Point Start, Point End);
+internal record Point(int X, int Y);
 
