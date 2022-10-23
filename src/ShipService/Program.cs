@@ -24,6 +24,8 @@ app.MapPost("/ships", async (Ship ship) => {
 
     var newShip = new Ship(Guid.NewGuid(), ship.BoardId, ship.Size, ship.Start, ship.End);
 
+    var shipcollectionString = 
+
     await client.SaveStateAsync(DAPR_STORE_NAME, newShip.Id.ToString(), JsonSerializer.Serialize(newShip));
 
     Console.WriteLine(newShip.ToString());
@@ -41,18 +43,20 @@ app.MapGet("/shiplocations", async (Guid boardId) =>
 });
 
 // Dapr subscription in [Topic] routes orders topic to this route
-app.MapPost("/shots", [Topic("shotsspubsub", "shots")] async (Shot shot) =>
+app.MapPost("/shots", [Topic("pubsub", "shots")] async (Shot shot) =>
 {
-    Console.WriteLine("Shots...");
+    Console.WriteLine("Shots...");    
 
-    var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, $"{{\"filter\": {{ \"EQ\": {{ \"boardId\": \"{shot.BoardId}\" }} }} }}");
+    var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, query);
+    //var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, $"{{\"filter\": {{ \"EQ\": {{ \"boardId\": \"{shot.BoardId}\" }} }} }}");
     
     foreach (var ship in shipsToShoot.Results)
     {
         Console.WriteLine($"Shooting ship: {ship}");
 
-        var hitsOnShip = await client.GetStateAsync<HitCollection>(DAPR_STORE_NAME, $"hc_{ship.Data.Id}") 
-            ?? new HitCollection(ship.Data.Id, new List<Point>());
+        var hitsOnShipString = await client.GetStateAsync<string>(DAPR_STORE_NAME, $"hc_{ship.Data.Id}");
+        var hitsOnShip = string.IsNullOrEmpty(hitsOnShipString) ? JsonSerializer.Deserialize<HitCollection>(hitsOnShipString)
+            : new HitCollection(ship.Data.Id, new List<Point>());
 
         if (IsPointOnShip(shot.Point, ship.Data))
         {
@@ -98,6 +102,7 @@ bool IsShipHorizontal(Ship ship)
 await app.RunAsync();
 
 internal record Ship(Guid Id, Guid BoardId, int Size, Point Start, Point End);
+internal record ShipCollection(Guid BoardId, Ship[] Ships);
 internal record Shot(Guid BoardId, Point Point);
 internal record Point(int X, int Y);
 internal record HitCollection(Guid ShipId, List<Point> Hits);

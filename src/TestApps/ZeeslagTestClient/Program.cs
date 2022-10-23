@@ -5,7 +5,20 @@ using ZeeslagTestClient.Models;
 DaprClient client = new DaprClientBuilder().Build();
 
 //await PlayermanagerTest(client);
-await GamemanagerTest(client);
+//await GamemanagerTest(client);
+await ShipmanagerTest(client);
+
+static async Task ShipmanagerTest(DaprClient client)
+{
+    var boardId = Guid.NewGuid();
+
+    var ship = new Ship(new Guid(), boardId, 10, new Point(4, 2), new Point(4, 7));
+
+    var shipRequest = client.CreateInvokeMethodRequest(HttpMethod.Post, "shipmanager", "ships", ship);
+    var shipResult = await client.InvokeMethodAsync<Ship>(shipRequest);
+
+    await client.PublishEventAsync("pubsub", "shots", new Shot(boardId, new Point(4, 2)));
+}
 
 static async Task GamemanagerTest(DaprClient client)
 {
@@ -16,13 +29,10 @@ static async Task GamemanagerTest(DaprClient client)
 
     Console.WriteLine($"POST: {resultPost.ToString()}");
 
-    await client.PublishEventAsync("shotsspubsub", "shots", new Shot(resultPost.BoardId, new Point(4,2)));
+    await client.PublishEventAsync("pubsub", "shots", new Shot(resultPost.BoardId, new Point(4,2)));
 
     Console.WriteLine("Take shot: 4,2");
 }
-
-
-
 
 static async Task PlayermanagerTest(DaprClient client)
 {
@@ -41,6 +51,7 @@ static async Task PlayermanagerTest(DaprClient client)
 
 record PlayerRecord(string Name, int Age, int Highscore);
 record Game(Guid Id, string Player, Difficulty Difficulty, Guid BoardId);
+record Ship(Guid Id, Guid BoardId, int Size, Point Start, Point End);
 record Shot(Guid BoardId, Point Point);
 record Point(int X, int Y);
 
