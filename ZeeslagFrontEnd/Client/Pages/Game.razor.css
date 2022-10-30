@@ -1,0 +1,17 @@
+﻿body {
+}
+
+.cell-empty {
+    background-color: white;
+    text-align: center
+}
+
+.cell-miss {
+    background-color: blue;
+    text-align: center
+}
+
+.cell-hit {
+    background-color: red;
+    text-align: center
+}

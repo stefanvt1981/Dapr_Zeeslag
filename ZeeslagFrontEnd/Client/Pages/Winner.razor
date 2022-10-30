@@ -1,0 +1,14 @@
+﻿@page "/winner"
+
+@inject NavigationManager NavigationManager
+
+<h3>Winner!!</h3>
+
+<button class="btn btn-primary" @onclick="Start">Start new game</button>
+
+@code {
+    private void Start()
+    {
+        NavigationManager.NavigateTo("player");
+    }
+}

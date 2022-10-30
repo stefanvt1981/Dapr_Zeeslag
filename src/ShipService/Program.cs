@@ -24,9 +24,23 @@ app.MapPost("/ships", async (Ship ship) => {
 
     var newShip = new Ship(Guid.NewGuid(), ship.BoardId, ship.Size, ship.Start, ship.End);
 
-    var shipcollectionString = 
+    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, ship.BoardId.ToString());
 
-    await client.SaveStateAsync(DAPR_STORE_NAME, newShip.Id.ToString(), JsonSerializer.Serialize(newShip));
+    Ship[] ships;
+
+    if(string.IsNullOrEmpty(shipcollectionString))
+    {
+        ships = new[] { newShip };
+    }
+    else
+    {
+        var shipCollection = JsonSerializer.Deserialize<ShipCollection>(shipcollectionString);
+        ships = shipCollection.Ships.Concat(new[] { newShip }).ToArray();
+    }
+
+    var newShipCollection = new ShipCollection(ship.BoardId, ships);
+
+    await client.SaveStateAsync(DAPR_STORE_NAME, newShip.BoardId.ToString(), JsonSerializer.Serialize(newShipCollection));
 
     Console.WriteLine(newShip.ToString());
 
@@ -35,9 +49,10 @@ app.MapPost("/ships", async (Ship ship) => {
 
 app.MapGet("/shiplocations", async (Guid boardId) =>
 {
-    var shipsForBoard = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, $"{{ \"filter\": {{ \"EQ\": {{ \"boardId\": \"{boardId}\" }} }} }}");
+    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, boardId.ToString());
+    var shipCollection = JsonSerializer.Deserialize<ShipCollection>(shipcollectionString);
 
-    var shipLocations = shipsForBoard.Results.Select(ship => new ShipLocation(ship.Data.Start, ship.Data.End)).ToArray();
+    var shipLocations = shipCollection.Ships.Select(ship => new ShipLocation(ship.Start, ship.End)).ToArray();
 
     return new ShipLocations(shipLocations);
 });
@@ -45,33 +60,51 @@ app.MapGet("/shiplocations", async (Guid boardId) =>
 // Dapr subscription in [Topic] routes orders topic to this route
 app.MapPost("/shots", [Topic("pubsub", "shots")] async (Shot shot) =>
 {
-    Console.WriteLine("Shots...");    
+    Console.WriteLine("Shots...");
 
-    var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, query);
-    //var shipsToShoot = await client.QueryStateAsync<Ship>(DAPR_STORE_NAME, $"{{\"filter\": {{ \"EQ\": {{ \"boardId\": \"{shot.BoardId}\" }} }} }}");
-    
-    foreach (var ship in shipsToShoot.Results)
+    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, shot.BoardId.ToString());
+    var shipCollection = JsonSerializer.Deserialize<ShipCollection>(shipcollectionString);
+
+    foreach (var ship in shipCollection.Ships)
     {
         Console.WriteLine($"Shooting ship: {ship}");
 
-        var hitsOnShipString = await client.GetStateAsync<string>(DAPR_STORE_NAME, $"hc_{ship.Data.Id}");
-        var hitsOnShip = string.IsNullOrEmpty(hitsOnShipString) ? JsonSerializer.Deserialize<HitCollection>(hitsOnShipString)
-            : new HitCollection(ship.Data.Id, new List<Point>());
+        var hitsOnShipString = await client.GetStateAsync<string>(DAPR_STORE_NAME, $"hc_{ship.Id}");
+        var hitsOnShip = hitsOnShipString != null ? JsonSerializer.Deserialize<HitCollection>(hitsOnShipString) : null;
 
-        if (IsPointOnShip(shot.Point, ship.Data))
+        var hitList = hitsOnShip == null ? new List<Point>() : hitsOnShip.Hits.ToList();
+
+        if (IsPointOnShip(shot.Point, ship))
         {
-            if(hitsOnShip.Hits.Count + 1 == ship.Data.Size)
+            if(hitList.Count + 1 == ship.Size)
             {
                 // send destruction event
-                await client.DeleteStateAsync(DAPR_STORE_NAME, ship.Data.Id.ToString());
+                Console.WriteLine("Send Destruction!!");
+                await client.PublishEventAsync("pubsub", "destruction", new ShipDestruction(ship.Id, shot.BoardId));                               
+
+                await client.DeleteStateAsync(DAPR_STORE_NAME, ship.Id.ToString());
             }
             else
             {
-                hitsOnShip.Hits.Add(shot.Point);
-                await client.SaveStateAsync(DAPR_STORE_NAME, $"hc_{ship.Data.Id}", JsonSerializer.Serialize(hitsOnShip));
-                // send hit event
-                Console.WriteLine("Send Hit!!");
+                if (!hitList.Contains(shot.Point))
+                {
+                    hitList.Add(shot.Point);
+                    var newHitsOnShip = new HitCollection(ship.Id, hitList.ToArray());
+
+                    await client.SaveStateAsync(DAPR_STORE_NAME, $"hc_{ship.Id}", JsonSerializer.Serialize(newHitsOnShip));
+                    // send hit event
+                    Console.WriteLine("Send Hit!!");
+                    await client.PublishEventAsync("pubsub", "hits", new Hit(ship.Id, shot.BoardId, shot.Point));
+                }
+                else
+                {
+                    Console.WriteLine($"Hit on same spot {shot.Point}");
+                }
             }
+        }
+        else
+        {
+            await client.PublishEventAsync("pubsub", "misses", new Miss(shot.BoardId, shot.Point));
         }
     }
 });
@@ -105,8 +138,9 @@ internal record Ship(Guid Id, Guid BoardId, int Size, Point Start, Point End);
 internal record ShipCollection(Guid BoardId, Ship[] Ships);
 internal record Shot(Guid BoardId, Point Point);
 internal record Point(int X, int Y);
-internal record HitCollection(Guid ShipId, List<Point> Hits);
+internal record HitCollection(Guid ShipId, Point[] Hits);
 internal record Hit(Guid ShipId, Guid BoardId, Point ImpactPoint);
+internal record Miss(Guid BoardId, Point Point);
 internal record ShipDestruction(Guid ShipId, Guid BoardId);
 internal record ShipLocation(Point Start, Point End);
 internal record ShipLocations(ShipLocation[] Locations);

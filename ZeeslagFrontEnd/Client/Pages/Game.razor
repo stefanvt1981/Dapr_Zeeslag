@@ -1,0 +1,78 @@
+﻿@page "/game" 
+@using ZeeslagFrontEnd.Shared.Grid;
+@using ZeeslagFrontEnd.Shared.Records;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using System.Text.Json;
+
+@inject NavigationManager Navigation
+
+@implements IAsyncDisposable
+
+<h3>Game</h3>
+
+<table class="table-bordered">
+    <tbody>
+        @for(int y = 0; y < size; y++)
+        {
+            <tr id="row-@y">
+
+                @for (int x = 0; x < size; x++)
+                {
+                    var curX = x;
+                    var curY = y;
+                    <td id="cell-@x-@y" class="@grid.Grid[x,y]" @onclick="e => CellClick(curX,curY)">X</td>
+                }
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private int size { get; } = 10;
+    private StyleGrid grid = new StyleGrid(10);
+    private HubConnection? hubConnection;
+
+    private async Task CellClick(int x, int y)
+    {
+        grid.SetHit(x, y);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
+            .Build();
+
+        hubConnection.On<string>("miss", (message) =>
+        {
+            var miss = JsonSerializer.Deserialize<Miss>(message);
+            grid.SetMiss(miss.Point.X, miss.Point.Y);
+        });
+
+        hubConnection.On<string>("hit", (message) =>
+        {
+            var hit = JsonSerializer.Deserialize<Hit>(message);
+            grid.SetHit(hit.ImpactPoint.X, hit.ImpactPoint.Y);
+        });
+
+        hubConnection.On<string>("destruction", (message) =>
+        {
+            var destruction = JsonSerializer.Deserialize<ShipDestruction>(message);
+            Navigation.NavigateTo("winner");
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

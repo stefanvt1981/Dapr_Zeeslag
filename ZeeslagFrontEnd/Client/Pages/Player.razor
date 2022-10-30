@@ -1,0 +1,31 @@
+﻿@page "/player" 
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>Player</PageTitle>
+
+<h1>Player</h1>
+
+<p>Enter player name:</p>
+
+<input type="text" @bind="@playerName" />
+
+<p>Enter player age:</p>
+
+<input type="text" @bind="@playerAge" />
+
+<button class="btn btn-primary" @onclick="Start">Start</button>
+
+@code {
+    private string playerName = "";
+    private int playerAge = 40;
+
+    private async Task Start()
+    {
+        await Http.PostAsJsonAsync("player", new ZeeslagFrontEnd.Shared.Records.Player(playerName, playerAge, 0));
+
+        NavigationManager.NavigateTo("game");
+    }
+}
+

@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 
-app.MapPost("/players", async (PlayerRecord player) =>
+app.MapPost("/players", async (Player player) =>
 {
     Console.WriteLine($"Save Playerstring: {player.ToString()}");
 
@@ -34,7 +34,7 @@ app.MapGet("/players/{name}", async (string name) =>
     
     Console.WriteLine($"Get Playerstring: {playerString}");
 
-    var player = JsonSerializer.Deserialize<PlayerRecord>(playerString);
+    var player = JsonSerializer.Deserialize<Player>(playerString);
 
     Console.WriteLine($"Deserialize Playerstring: {player.ToString()}");
 
@@ -43,4 +43,4 @@ app.MapGet("/players/{name}", async (string name) =>
 
 app.Run();
 
-public record PlayerRecord(string Name, int Age, int Highscore);
+public record Player(string Name, int Age, int Highscore);
