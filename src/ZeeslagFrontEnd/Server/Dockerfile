@@ -11,7 +11,7 @@ COPY ["src/ZeeslagFrontEnd/Client/ZeeslagFrontEnd.Client.csproj", "src/ZeeslagFr
 COPY ["src/ZeeslagFrontEnd/Shared/ZeeslagFrontEnd.Shared.csproj", "src/ZeeslagFrontEnd/Shared/"]
 RUN dotnet restore "src/ZeeslagFrontEnd/Server/ZeeslagFrontEnd.Server.csproj"
 COPY . .
-WORKDIR "/src/src/ZeeslagFrontEnd/Server"
+WORKDIR "/src/ZeeslagFrontEnd/Server"
 RUN dotnet build "ZeeslagFrontEnd.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish

@@ -7,16 +7,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["ShipManager/ShipManager.csproj", "ShipManager/"]
-RUN dotnet restore "ShipManager/ShipManager.csproj"
+COPY ["ShipService/ShipService.csproj", "ShipService/"]
+RUN dotnet restore "ShipService/ShipService.csproj"
 COPY . .
-WORKDIR "/src/ShipManager"
-RUN dotnet build "ShipManager.csproj" -c Release -o /app/build
+WORKDIR "/src/ShipService"
+RUN dotnet build "ShipService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ShipManager.csproj" -c Release -o /app/publish
+RUN dotnet publish "ShipService.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ShipManager.dll"]
+ENTRYPOINT ["dotnet", "ShipService.dll"]

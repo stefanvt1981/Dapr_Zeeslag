@@ -7,16 +7,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["GameManager/GameManager.csproj", "GameManager/"]
-RUN dotnet restore "GameManager/GameManager.csproj"
+COPY ["GameService/GameService.csproj", "GameService/"]
+RUN dotnet restore "GameService/GameService.csproj"
 COPY . .
-WORKDIR "/src/GameManager"
-RUN dotnet build "GameManager.csproj" -c Release -o /app/build
+WORKDIR "/src/GameService"
+RUN dotnet build "GameService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "GameManager.csproj" -c Release -o /app/publish
+RUN dotnet publish "GameService.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "GameManager.dll"]
+ENTRYPOINT ["dotnet", "GameService.dll"]
