@@ -25,7 +25,7 @@
     {
         await Http.PostAsJsonAsync("player", new ZeeslagFrontEnd.Shared.Records.Player(playerName, playerAge, 0));
 
-        NavigationManager.NavigateTo("game");
+        NavigationManager.NavigateTo($"game?player={playerName}&difficulty={"Easy"}");
     }
 }
 

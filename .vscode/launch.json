@@ -1,0 +1,264 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        //BOARD
+
+        {
+            "name": "Launch board",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildboard",
+            "program": "${workspaceFolder}/src/BoardService/bin/Debug/net6.0/BoardService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/BoardService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        },
+        {
+            "name": "Launch board with Dapr",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dapr-debug-board",
+            "program": "${workspaceFolder}/src/BoardService/bin/Debug/net6.0/BoardService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/BoardService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            },
+            "postDebugTask": "daprd-down-board"
+        },
+
+        // GAME  
+        
+        {
+            "name": "Launch game",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildgame",
+            "program": "${workspaceFolder}/src/GameService/bin/Debug/net6.0/GameService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/GameService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        },
+        {
+            "name": "Launch game with Dapr",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dapr-debug-game",
+            "program": "${workspaceFolder}/src/GameService/bin/Debug/net6.0/GameService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/GameService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            },
+            "postDebugTask": "daprd-down-game"
+        },
+
+        // SHIP  
+        
+        {
+            "name": "Launch ship",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildship",
+            "program": "${workspaceFolder}/src/ShipService/bin/Debug/net6.0/ShipService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ShipService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        },
+        {
+            "name": "Launch ship with Dapr",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dapr-debug-ship",
+            "program": "${workspaceFolder}/src/ShipService/bin/Debug/net6.0/ShipService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ShipService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            },
+            "postDebugTask": "daprd-down-ship"
+        },
+
+        // PLAYER  
+        
+        {
+            "name": "Launch player",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildplayer",
+            "program": "${workspaceFolder}/src/PlayerService/bin/Debug/net6.0/PlayerService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/PlayerService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        },
+        {
+            "name": "Launch player with Dapr",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dapr-debug-player",
+            "program": "${workspaceFolder}/src/PlayerService/bin/Debug/net6.0/PlayerService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/PlayerService",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            },
+            "postDebugTask": "daprd-down-player"
+        },
+
+        // CLIENT  
+        
+        {
+            "name": "Launch client",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "buildclient",
+            "program": "${workspaceFolder}/src/ZeeslagFrontEnd/Server/bin/Debug/net6.0/ZeeslagFrontEnd.Server.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ZeeslagFrontEnd/Server",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        },
+        {
+            "name": "Launch client with Dapr",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dapr-debug-client",
+            "program": "${workspaceFolder}/src/ZeeslagFrontEnd/Server/bin/Debug/net6.0/ZeeslagFrontEnd.Server.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/ZeeslagFrontEnd/Server",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            },
+            "postDebugTask": "daprd-down-client"
+        }        
+    ],
+
+    // All together now!
+    "compounds": [
+        {
+            "name": "Zeeslag",
+            "configurations": [
+                "Launch board with Dapr", 
+                "Launch client with Dapr", 
+                "Launch game with Dapr", 
+                "Launch player with Dapr", 
+                "Launch ship with Dapr"
+            ]
+        }
+    ]
+}

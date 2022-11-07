@@ -1,26 +1,31 @@
 ﻿@page "/game" 
+@using Microsoft.AspNetCore.WebUtilities
+@using ZeeslagFrontEnd.Shared.Enums
 @using ZeeslagFrontEnd.Shared.Grid;
 @using ZeeslagFrontEnd.Shared.Records;
 @using Microsoft.AspNetCore.SignalR.Client;
 @using System.Text.Json;
 
 @inject NavigationManager Navigation
+@inject HttpClient Http
 
 @implements IAsyncDisposable
 
-<h3>Game</h3>
-
+<h3>Game</h3> 
+@{
+    SetSize();
+}
 <table class="table-bordered">
-    <tbody>
-        @for(int y = 0; y < size; y++)
+    <tbody>     
+        @for(int y = 0; y < _size; y++)
         {
             <tr id="row-@y">
 
-                @for (int x = 0; x < size; x++)
+                @for (int x = 0; x < _size; x++)
                 {
                     var curX = x;
                     var curY = y;
-                    <td id="cell-@x-@y" class="@grid.Grid[x,y]" @onclick="e => CellClick(curX,curY)">X</td>
+                    <td id="cell-@x-@y" class="@_grid.Grid[x,y]" @onclick="e => CellClick(curX,curY)">X</td>
                 }
 
             </tr>
@@ -29,50 +34,101 @@
 </table>
 
 @code {
-    private int size { get; } = 10;
-    private StyleGrid grid = new StyleGrid(10);
-    private HubConnection? hubConnection;
+    private int _size;
+    private StyleGrid _grid;
+    private HubConnection? _hubConnection;
+
+    private string _playerName;
+    private Difficulty _difficulty;
+
+    private ZeeslagFrontEnd.Shared.Records.Game _game;
 
     private async Task CellClick(int x, int y)
     {
-        grid.SetHit(x, y);
+        await Http.PostAsJsonAsync<Shot>("shots/shoot", new Shot(_game.BoardId, new Point(x,y)));
+        StateHasChanged();
     }
+
+    private void SetSize()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("difficulty", out var difficulty))
+        {
+            _difficulty = Enum.Parse<Difficulty>(difficulty);
+        }
+        else
+        {
+            _difficulty = Difficulty.Easy;
+        }
+
+        _size = _difficulty switch
+        {
+            Difficulty.Easy => 10,
+            Difficulty.Normal => 20,
+            Difficulty.Hard => 30,
+        };
+
+        _grid = new StyleGrid(_size);
+    }   
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
+        _hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
             .Build();
 
-        hubConnection.On<string>("miss", (message) =>
+        _hubConnection.On<Miss>("miss", (miss) =>
         {
-            var miss = JsonSerializer.Deserialize<Miss>(message);
-            grid.SetMiss(miss.Point.X, miss.Point.Y);
+            Console.WriteLine("Miss!!");
+            StateHasChanged();
+            _grid.SetMiss(miss.Point.X, miss.Point.Y);
+            StateHasChanged();
         });
 
-        hubConnection.On<string>("hit", (message) =>
-        {
-            var hit = JsonSerializer.Deserialize<Hit>(message);
-            grid.SetHit(hit.ImpactPoint.X, hit.ImpactPoint.Y);
+        _hubConnection.On<Hit>("hit", (hit) =>
+        {            
+            Console.WriteLine("Hitt!!");
+            StateHasChanged();
+            _grid.SetHit(hit.ImpactPoint.X, hit.ImpactPoint.Y);
+            StateHasChanged();
         });
 
-        hubConnection.On<string>("destruction", (message) =>
-        {
-            var destruction = JsonSerializer.Deserialize<ShipDestruction>(message);
+        _hubConnection.On<ShipDestruction>("destruction", (destruction) =>
+        {            
             Navigation.NavigateTo("winner");
         });
 
-        await hubConnection.StartAsync();
+        await _hubConnection.StartAsync();
+
+        await StartGame();
+    }
+
+    private async Task StartGame()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("player", out var player))
+        {
+            _playerName = player;
+        }
+        else
+        {
+            _playerName = "Stefan";
+        }
+
+        var result = await Http.PostAsJsonAsync("game/start", new NewGame(_playerName, _difficulty));
+        _game = await result.Content.ReadFromJsonAsync<ZeeslagFrontEnd.Shared.Records.Game>();
     }
 
     public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
+        _hubConnection?.State == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
+        if (_hubConnection is not null)
         {
-            await hubConnection.DisposeAsync();
+            await _hubConnection.DisposeAsync();
         }
     }
 }

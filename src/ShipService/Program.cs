@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Dapr;
 using Dapr.Client;
+using Google.Api;
+using Microsoft.OpenApi.Models;
 
 const string DAPR_STORE_NAME = "statestore";
 
@@ -9,6 +11,12 @@ const string DAPR_STORE_NAME = "statestore";
 DaprClient client = new DaprClientBuilder().Build();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer(); 
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ShipService", Version = "v1" });
+});
 
 var app = builder.Build();
 
@@ -18,13 +26,23 @@ app.UseCloudEvents();
 // needed for Dapr pub/sub routing
 app.MapSubscribeHandler();
 
-if (app.Environment.IsDevelopment()) { app.UseDeveloperExceptionPage(); }
+if (app.Environment.IsDevelopment()) 
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("v1/swagger.json", "ShipService V1");
+    });
+}
+
+app.MapGet("/test", () => "Hoi");
 
 app.MapPost("/ships", async (Ship ship) => {
 
     var newShip = new Ship(Guid.NewGuid(), ship.BoardId, ship.Size, ship.Start, ship.End);
 
-    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, ship.BoardId.ToString());
+    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, $"SS_{ship.BoardId.ToString()}");
 
     Ship[] ships;
 
@@ -40,16 +58,16 @@ app.MapPost("/ships", async (Ship ship) => {
 
     var newShipCollection = new ShipCollection(ship.BoardId, ships);
 
-    await client.SaveStateAsync(DAPR_STORE_NAME, newShip.BoardId.ToString(), JsonSerializer.Serialize(newShipCollection));
+    await client.SaveStateAsync(DAPR_STORE_NAME, $"SS_{newShip.BoardId.ToString()}", JsonSerializer.Serialize(newShipCollection));
 
     Console.WriteLine(newShip.ToString());
 
     return newShip;
 });
 
-app.MapGet("/shiplocations", async (Guid boardId) =>
+app.MapGet("/shiplocations/{boardId}", async (Guid boardId) =>
 {
-    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, boardId.ToString());
+    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, $"SS_{boardId.ToString()}");
     var shipCollection = JsonSerializer.Deserialize<ShipCollection>(shipcollectionString);
 
     var shipLocations = shipCollection.Ships.Select(ship => new ShipLocation(ship.Start, ship.End)).ToArray();
@@ -62,7 +80,12 @@ app.MapPost("/shots", [Topic("pubsub", "shots")] async (Shot shot) =>
 {
     Console.WriteLine("Shots...");
 
-    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, shot.BoardId.ToString());
+    var shipcollectionString = await client.GetStateAsync<string>(DAPR_STORE_NAME, $"SS_{shot.BoardId.ToString()}");
+    if(string.IsNullOrWhiteSpace(shipcollectionString))
+    {
+        Console.WriteLine("Board not found...");
+        return;
+    }
     var shipCollection = JsonSerializer.Deserialize<ShipCollection>(shipcollectionString);
 
     foreach (var ship in shipCollection.Ships)

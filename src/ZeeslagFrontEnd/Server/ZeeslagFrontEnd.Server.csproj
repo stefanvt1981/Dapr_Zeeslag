@@ -10,6 +10,9 @@
     <PackageReference Include="Dapr.AspNetCore" Version="1.9.0" />
     <PackageReference Include="Dapr.Client" Version="1.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>

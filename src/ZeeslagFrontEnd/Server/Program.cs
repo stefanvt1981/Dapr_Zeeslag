@@ -1,5 +1,8 @@
+using Dapr;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.OpenApi.Models;
 using ZeeslagFrontEnd.Server.Hubs;
+using ZeeslagFrontEnd.Shared.Records;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Client", Version = "v1" });
+});
 
 // SignalR
 builder.Services.AddSignalR();
@@ -24,6 +34,8 @@ app.UseResponseCompression();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -39,5 +51,11 @@ app.MapRazorPages();
 app.MapControllers();
 app.MapHub<GameHub>("/gamehub");
 app.MapFallbackToFile("index.html");
+
+// Dapr will send serialized event object vs. being raw CloudEvent
+app.UseCloudEvents();
+
+// needed for Dapr pub/sub routing
+app.MapSubscribeHandler();
 
 app.Run();

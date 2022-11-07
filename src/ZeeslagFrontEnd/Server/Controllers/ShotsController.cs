@@ -7,7 +7,7 @@ using ZeeslagFrontEnd.Shared.Records;
 
 namespace ZeeslagFrontEnd.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ShotsController : ControllerBase
     {
@@ -21,17 +21,17 @@ namespace ZeeslagFrontEnd.Server.Controllers
         }
 
         [Topic("pubsub", "misses")]
-        [HttpPost("miss")]
+        [HttpPost("misses")]
         public Task Miss([FromBody] Miss missedShot)
         {
             return _hubContext.Clients.All.SendAsync("miss", missedShot);                
         }
 
         [Topic("pubsub", "hits")]
-        [HttpPost("hit")]
-        public Task Hit([FromBody] Hit hitShot)
-        {
-            return _hubContext.Clients.All.SendAsync("hit", hitShot);
+        [HttpPost("hits")]
+        public async Task Hit([FromBody] Hit hitShot)
+        {            
+            await _hubContext.Clients.All.SendAsync("hit", hitShot);
         }
 
         [Topic("pubsub", "destruction")]

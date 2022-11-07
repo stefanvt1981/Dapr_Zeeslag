@@ -17,12 +17,19 @@ namespace ZeeslagFrontEnd.Server.Controllers
         }
 
         [HttpPost]        
-        public Task SetPlayer([FromBody] Player player)
+        public async Task<Player> SetPlayer([FromBody] Player player)
         {
-            //var playerRequest = _daprClient.CreateInvokeMethodRequest(HttpMethod.Post, "playerservice", "player", player);
-            //return _daprClient.InvokeMethodAsync(playerRequest);
-            Console.WriteLine(player);
-            return Task.CompletedTask;
+            var playerRequest = _daprClient.CreateInvokeMethodRequest(HttpMethod.Post, "playerservice", "players", player);
+            try
+            {
+                var playerResult = await _daprClient.InvokeMethodAsync<Player>(playerRequest);
+                return playerResult;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"{ex.Message}");
+            }
+            return new Player("Piet", 40, 0);   
         }
     }
 }

@@ -1,0 +1,274 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        //BOARD:
+
+        {
+            "label": "buildboard",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/BoardService/BoardService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publishboard",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/BoardService/BoardService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watchboard",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/BoardService/BoardService.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "appId": "boardservice",
+            "appPort": 6000,
+            "label": "dapr-debug-board",
+            "type": "dapr",
+            "dependsOn": "buildboard",
+            "componentsPath": "./components",
+            "grpcPort": 50000,
+            "httpPort": 3500
+        },
+        {
+            "appId": "boardservice",
+            "label": "daprd-down-board",
+            "type": "daprd-down"
+        },
+
+        // GAME:
+
+        {
+            "label": "buildgame",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/GameService/GameService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publishgame",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/GameService/GameService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watchgame",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/GameService/GameService.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "appId": "gameservice",
+            "appPort": 6001,
+            "label": "dapr-debug-game",
+            "type": "dapr",
+            "dependsOn": "buildgame",
+            "componentsPath": "./components",
+            "grpcPort": 50001,
+            "httpPort": 3501
+        },
+        {
+            "appId": "gameservice",
+            "label": "daprd-down-game",
+            "type": "daprd-down"
+        },
+
+         // SHIP:
+
+         {
+            "label": "buildship",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/ShipService/ShipService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publishship",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/ShipService/ShipService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watchship",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/ShipService/ShipService.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "appId": "shipservice",
+            "appPort": 6003,
+            "label": "dapr-debug-ship",
+            "type": "dapr",
+            "dependsOn": "buildship",
+            "componentsPath": "./components",
+            "grpcPort": 50003,
+            "httpPort": 3503
+        },
+        {
+            "appId": "shipservice",
+            "label": "daprd-down-ship",
+            "type": "daprd-down"
+        },
+
+        // PLAYER:
+
+        {
+            "label": "buildplayer",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/PlayerService/PlayerService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publishplayer",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/PlayerService/PlayerService.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watchplayer",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/PlayerService/PlayerService.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "appId": "playerservice",
+            "appPort": 6002,
+            "label": "dapr-debug-player",
+            "type": "dapr",            
+            "dependsOn": "buildplayer",
+            "componentsPath": "./components",
+            "grpcPort": 50002,
+            "httpPort": 3502
+        },
+        {
+            "appId": "playerservice",
+            "label": "daprd-down-player",
+            "type": "daprd-down"
+        },
+
+        // CLIENT:
+
+        {
+            "label": "buildclient",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/ZeeslagFrontEnd/Server/ZeeslagFrontEnd.Server.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publishclient",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/ZeeslagFrontEnd/Server/ZeeslagFrontEnd.Server.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watchclient",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/ZeeslagFrontEnd/Server/ZeeslagFrontEnd.Server.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "appId": "client",
+            "appPort": 6004,
+            "label": "dapr-debug-client",
+            "type": "dapr",
+            "dependsOn": "buildclient",
+            "componentsPath": "./components",
+            "grpcPort": 50004,
+            "httpPort": 3504
+        },
+        {
+            "appId": "client",
+            "label": "daprd-down-client",
+            "type": "daprd-down"
+        }
+    ]
+}
