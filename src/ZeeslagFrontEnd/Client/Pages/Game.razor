@@ -45,8 +45,7 @@
 
     private async Task CellClick(int x, int y)
     {
-        await Http.PostAsJsonAsync<Shot>("shots/shoot", new Shot(_game.BoardId, new Point(x,y)));
-        StateHasChanged();
+        await Http.PostAsJsonAsync<Shot>("shots/shoot", new Shot(_game.BoardId, new Point(x,y)));        
     }
 
     private void SetSize()
@@ -69,27 +68,29 @@
             Difficulty.Hard => 30,
         };
 
-        _grid = new StyleGrid(_size);
+        if(_grid == null)
+        {
+            _grid = new StyleGrid(_size);
+        }
     }   
 
     protected override async Task OnInitializedAsync()
     {
+
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
             .Build();
 
         _hubConnection.On<Miss>("miss", (miss) =>
         {
-            Console.WriteLine("Miss!!");
-            StateHasChanged();
+            Console.WriteLine("Miss!!");            
             _grid.SetMiss(miss.Point.X, miss.Point.Y);
             StateHasChanged();
         });
 
         _hubConnection.On<Hit>("hit", (hit) =>
         {            
-            Console.WriteLine("Hitt!!");
-            StateHasChanged();
+            Console.WriteLine("Hitt!!");            
             _grid.SetHit(hit.ImpactPoint.X, hit.ImpactPoint.Y);
             StateHasChanged();
         });
