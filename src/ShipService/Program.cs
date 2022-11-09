@@ -105,7 +105,8 @@ app.MapPost("/shots", [Topic("pubsub", "shots")] async (Shot shot) =>
                 Console.WriteLine("Send Destruction!!");
                 await client.PublishEventAsync("pubsub", "destruction", new ShipDestruction(ship.Id, shot.BoardId));                               
 
-                await client.DeleteStateAsync(DAPR_STORE_NAME, ship.Id.ToString());
+                await client.DeleteStateAsync(DAPR_STORE_NAME, $"hc_{ship.Id}");
+                await client.DeleteStateAsync(DAPR_STORE_NAME, $"SS_{shot.BoardId}");
             }
             else
             {

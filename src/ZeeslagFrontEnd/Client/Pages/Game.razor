@@ -95,14 +95,21 @@
             StateHasChanged();
         });
 
-        _hubConnection.On<ShipDestruction>("destruction", (destruction) =>
-        {            
+        _hubConnection.On<ShipDestruction>("destruction", async (destruction) =>
+        {
+            await EndGame();
             Navigation.NavigateTo("winner");
         });
 
         await _hubConnection.StartAsync();
 
         await StartGame();
+    }
+
+    private async Task EndGame()
+    {
+        await Http.DeleteAsync($"board/{_game.BoardId}");
+        await Http.DeleteAsync($"game/end/{_game.Id}");
     }
 
     private async Task StartGame()

@@ -25,9 +25,14 @@ namespace ZeeslagFrontEnd.Server.Controllers
             var requestPost = _daprClient.CreateInvokeMethodRequest<Game>(HttpMethod.Post, "gameservice", "game", game);
             var resultPost = await _daprClient.InvokeMethodAsync<Game>(requestPost);
 
-            return resultPost;
+            return resultPost;            
+        }
 
-            //return new Game(Guid.NewGuid(), newGame.Player, newGame.Difficulty, Guid.NewGuid());
+        [HttpDelete("end/{gameId}")]        
+        public async Task EndGame([FromRoute] Guid gameId)
+        {            
+            var requestDelete = _daprClient.CreateInvokeMethodRequest(HttpMethod.Delete, "gameservice", $"game/{gameId}");
+            await _daprClient.InvokeMethodAsync(requestDelete);
         }
     }
 }

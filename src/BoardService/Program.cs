@@ -57,6 +57,18 @@ app.MapGet("/board/{boardId}", async (Guid boardId) =>
     return JsonSerializer.Deserialize<Board>(boardString);    
 });
 
+app.MapDelete("/board/{boardId}", async (Guid boardId) =>
+{
+    try
+    {
+        await client.DeleteStateAsync(DAPR_STORE_NAME, $"BS_{boardId.ToString()}");
+    }
+    catch(Exception)
+    {
+        Console.WriteLine($"Could not delete board: {boardId}");
+    }
+});
+
 app.MapGet("/test", () => "Hoi");
 
 async Task<Ship> CreateShip(Guid boardId)

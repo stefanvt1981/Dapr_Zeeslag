@@ -5,7 +5,7 @@ using ZeeslagFrontEnd.Shared.Records;
 
 namespace ZeeslagFrontEnd.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class BoardController : ControllerBase
     {
@@ -23,6 +23,13 @@ namespace ZeeslagFrontEnd.Server.Controllers
             var resultGet = await _daprClient.InvokeMethodAsync<Board>(requestGet);
 
             return resultGet;
+        }
+
+        [HttpDelete("{boardId}")]
+        public async Task DeleteBoard(Guid boardId)
+        {
+            var requestDelete = _daprClient.CreateInvokeMethodRequest(HttpMethod.Delete, "boardservice", $"board/{boardId}");
+            await _daprClient.InvokeMethodAsync(requestDelete);            
         }
     }
 }

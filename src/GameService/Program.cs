@@ -28,6 +28,18 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/test", () => "Hoi");
 
+app.MapDelete("game/{gameId}", async (Guid gameId) =>
+{
+    try
+    {
+        await client.DeleteStateAsync(DAPR_STORE_NAME, $"GS_{gameId}");
+    }
+    catch(Exception)
+    {
+        Console.WriteLine($"Could not delete game: {gameId}");
+    }
+});
+
 app.MapPost("game", async (Game game) =>
 {
     var gameId = Guid.NewGuid();

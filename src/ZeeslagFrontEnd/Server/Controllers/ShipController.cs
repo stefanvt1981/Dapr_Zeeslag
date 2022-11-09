@@ -5,7 +5,7 @@ using ZeeslagFrontEnd.Shared.Records;
 
 namespace ZeeslagFrontEnd.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ShipController : ControllerBase
     {
