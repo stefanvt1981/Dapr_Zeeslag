@@ -7,16 +7,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["PlayerManager/PlayerManager.csproj", "PlayerManager/"]
-RUN dotnet restore "PlayerManager/PlayerManager.csproj"
+COPY ["src/PlayerService/PlayerService.csproj", "src/PlayerService/"]
+RUN dotnet restore "src/PlayerService/PlayerService.csproj"
 COPY . .
-WORKDIR "/src/PlayerManager"
-RUN dotnet build "PlayerManager.csproj" -c Release -o /app/build
+WORKDIR "/src/src/PlayerService"
+RUN dotnet build "PlayerService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "PlayerManager.csproj" -c Release -o /app/publish
+RUN dotnet publish "PlayerService.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PlayerManager.dll"]
+ENTRYPOINT ["dotnet", "PlayerService.dll"]

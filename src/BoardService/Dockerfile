@@ -7,16 +7,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["BoardManager/BoardManager.csproj", "BoardManager/"]
-RUN dotnet restore "BoardManager/BoardManager.csproj"
+COPY ["src/BoardService/BoardService.csproj", "src/BoardService/"]
+RUN dotnet restore "src/BoardService/BoardService.csproj"
 COPY . .
-WORKDIR "/src/BoardManager"
-RUN dotnet build "BoardManager.csproj" -c Release -o /app/build
+WORKDIR "/src/src/BoardService"
+RUN dotnet build "BoardService.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "BoardManager.csproj" -c Release -o /app/publish
+RUN dotnet publish "BoardService.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "BoardManager.dll"]
+ENTRYPOINT ["dotnet", "BoardService.dll"]
